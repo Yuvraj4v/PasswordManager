@@ -10,7 +10,7 @@ function App() {
     <>
     <Navbar/>
     <Manager/>
-    <div>my ui</div>
+    <div></div>
     </>
   )
 }
