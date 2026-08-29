@@ -2,6 +2,7 @@ import React, { useEffect, useEffectEvent, useState } from 'react'
 import { useRef } from 'react';
 
 const Manager = () => {
+  const passwordRef = useRef() 
   const ref = useRef({ site: "", username: "", password: "" })
   const [form, setform] = useState({})
   const [passwordArray, setpasswordArray] = useState([])
@@ -16,12 +17,14 @@ const Manager = () => {
 
 
   const showpassword = () => {
-    alert("show the password");
+    passwordRef.current.type = "text"
     if (ref.current.src.includes("icons/eyecross.png")) {
       ref.current.src = "icons/eye.png"
+      passwordRef.current.type = "text"
     }
     else {
       ref.current.src = "icons/eyecross.png"
+      passwordRef.current.type = "password"
     }
   }
 
@@ -50,9 +53,9 @@ const Manager = () => {
             <input value={form.username} onChange={handleChange} placeholder='Enter Username' className='rounded-full border border-green-500 bg-white w-full text-black p-4 py-1' type="text" name='username' id='' />
             <div className='relative'>
 
-              <input value={form.password} onChange={handleChange} placeholder='Enter Password' className='rounded-full border border-green-500 bg-white w-full text-black p-4 py-1' type="text" name='password' id='' />
+              <input ref={passwordRef} value={form.password} onChange={handleChange} placeholder='Enter Password' className='rounded-full border border-green-500 bg-white w-full text-black p-4 py-1' type="password" name='password' id='' />
               <span className='absolute right-0.75 top-1 cursor-pointer ' onClick={showpassword}>
-                <img ref={ref} className='p-1' width={26} src="icons/eye.png" alt="eye" />
+                <img ref={ref} className='p-1' width={26} src="icons/eyecross.png" alt="eye" />
               </span>
             </div>
           </div>
@@ -69,27 +72,19 @@ const Manager = () => {
           {passwordArray.length!=0 && <table className="table-auto w-full rounded-md overflow-hidden">
             <thead className=' bg-green-800 text-white'>
               <tr>
-                <th className='py-2'>Song</th>
-                <th className='py-2'>Artist</th>
-                <th className='py-2'>Year</th>
+                <th className='py-2'>Site</th>
+                <th className='py-2'>Username</th>
+                <th className='py-2'>Password</th>
               </tr>
             </thead>
             <tbody className='bg-green-100'>
-              <tr>
-                <td className='py-2 border-white text-center w-32'>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
-                <td className='py-2 border-white text-center w-32'>Malcolm Lockyer</td>
-                <td className='py-2 border-white text-center w-32'>1961</td>
+              {passwordArray.map((item ,index)=>{
+                return<tr key={index}>
+                <td className='py-2 border-white text-center w-32'><a href={item.site} target='_blank'>{item.site}</a></td>
+                <td className='py-2 border-white text-center w-32'>{item.username}</td>
+                <td className='py-2 border-white text-center w-32'>{item.password}</td>
               </tr>
-              <tr>
-                <td className='py-2 border-white text-center w-32'>Witchy Woman</td>
-                <td className='py-2 border-white text-center w-32'>The Eagles</td>
-                <td className='py-2 border-white text-center w-32'>1972</td>
-              </tr>
-              <tr>
-                <td className='py-2 border-white text-center w-32'>Shining Star</td>
-                <td className='py-2 border-white text-center w-32'>Earth, Wind, and Fire</td>
-                <td className='py-2 border-white text-center w-32'>1975</td>
-              </tr>
+              })}
             </tbody>
           </table>}
         </div>
