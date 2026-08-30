@@ -1,6 +1,7 @@
 import React, { useEffect, useEffectEvent, useState } from 'react'
 import { useRef } from 'react';
 import { ToastContainer, toast, Bounce } from 'react-toastify'
+import { v4 as uuidv4 } from 'uuid';
 
 const Manager = () => {
   const passwordRef = useRef()
@@ -45,9 +46,43 @@ const Manager = () => {
   }
 
   const savePassword = () => {
-    setpasswordArray([...passwordArray, form])
-    localStorage.setItem("passwords", JSON.stringify([...passwordArray, form]))
+    setpasswordArray([...passwordArray, { ...form, id: uuidv4() }])
+    localStorage.setItem("passwords", JSON.stringify([...passwordArray, { ...form, id: uuidv4() }]))
     console.log([...passwordArray, form])
+    setform({ site: "", username: "", password: "" })
+    toast('Password saved!', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  }
+
+  const deletePassword = (id) => {
+    let c = confirm("Do you really want to delete this password?")
+    if (c) {
+      setpasswordArray(passwordArray.filter(item => item.id !== id))
+      localStorage.setItem("passwords", JSON.stringify(passwordArray.filter(item => item.id !== id)))
+      toast('Password Deleted!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  }
+
+  const editPassword = (id) => {
+    setform(passwordArray.filter(i => i.id === id)[0])
+    setpasswordArray(passwordArray.filter(item => item.id !== id))
   }
   const handleChange = (e) => {
     setform({ ...form, [e.target.name]: e.target.value })
