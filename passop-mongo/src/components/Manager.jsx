@@ -9,12 +9,18 @@ const Manager = () => {
   const [form, setform] = useState({})
   const [passwordArray, setpasswordArray] = useState([])
 
-  useEffect(() => {
-    let passwords = localStorage.getItem("passwords")
+  const getPasswords = async () => {
+    let req = await fetch("http://localhost:3000/")
+    let passwords = await req.json()
     let passwordArray;
-    if (passwords) {
-      setpasswordArray(JSON.parse(passwords))
-    }
+    setpasswordArray(passwords)
+
+  }
+
+
+  useEffect(() => {
+    getPasswords()
+
   }, [])
 
   const copyText = (text) => {
@@ -45,33 +51,68 @@ const Manager = () => {
     }
   }
 
-  const savePassword = () => {
-    if(form.site.length > 3 && form.username.length > 3 && form.password.length > 3){
-    setpasswordArray([...passwordArray, { ...form, id: uuidv4() }])
-    localStorage.setItem("passwords", JSON.stringify([...passwordArray, { ...form, id: uuidv4() }]))
-    console.log([...passwordArray, form])
-    setform({ site: "", username: "", password: "" })
-    toast('Password saved!', {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "dark",
-    });
-    }
-    else{
-      toast('Error:Password not saved!')
+  const savePassword = async () => {
+    if (
+      form.site.length > 3 &&
+      form.username.length > 3 &&
+      form.password.length > 3
+    ) {
+      const id = form.id || uuidv4();
+
+      const password = {
+        ...form,
+        id: id
+      };
+
+      if (form.id) {
+        await fetch("http://localhost:3000/", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ id: form.id })
+        });
+      }
+
+      setpasswordArray([...passwordArray, password]);
+
+      await fetch("http://localhost:3000/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(password)
+      });
+
+      console.log([...passwordArray, password]);
+
+      setform({
+        site: "",
+        username: "",
+        password: ""
+      });
+
+      toast("Password saved!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } else {
+      toast("Error: Password not saved!");
     }
   }
 
-  const deletePassword = (id) => {
+  const deletePassword = async (id) => {
     let c = confirm("Do you really want to delete this password?")
     if (c) {
       setpasswordArray(passwordArray.filter(item => item.id !== id))
-      localStorage.setItem("passwords", JSON.stringify(passwordArray.filter(item => item.id !== id)))
+      let res = await fetch("http://localhost:3000/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+      // localStorage.setItem("passwords", JSON.stringify(passwordArray.filter(item => item.id !== id)))
       toast('Password Deleted!', {
         position: "top-right",
         autoClose: 5000,
@@ -86,7 +127,7 @@ const Manager = () => {
   }
 
   const editPassword = (id) => {
-    setform(passwordArray.filter(i => i.id === id)[0])
+    setform({ ...passwordArray.filter(i => i.id === id)[0], id: id })
     setpasswordArray(passwordArray.filter(item => item.id !== id))
   }
   const handleChange = (e) => {
@@ -176,7 +217,7 @@ const Manager = () => {
                   </td>
                   <td className='justify-center py-2 border-white text-center w-32'>
                     <div className='flex items-center justify-center'>
-                      <span>{item.password}</span>
+                      <span>{"*".repeat(item.password.length)}</span>
                       <div className='lordiconcopy size-7 cursor-pointer' onClick={() => { copyText(item.password) }}>
                         <lord-icon
                           style={{ "width": "25px", "height": "25px", "paddingTop": "3px", "paddingLeft": "3px" }}
